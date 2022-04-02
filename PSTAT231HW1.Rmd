@@ -111,7 +111,6 @@ Make a bar plot of `manufacturer`. Flip it so that the manufacturers are on the 
 ```{r}
 p<-ggplot(data=mpg, aes(x=fct_infreq(manufacturer))) +
   geom_bar(stat="count")
-p
    
 # Horizontal bar plot
 p + coord_flip()
@@ -122,38 +121,56 @@ Toyota produced the most cars and Lincoln produced the least.
 Make a box plot of `hwy`, grouped by `cyl`. Do you see a pattern? If so, what?
 
 ```{r}
-# code copied from Stack Exchange
-# https://stackoverflow.com/questions/57107461/boxplot-by-group-and-then-column-in-r
-mpg_dt <- setDT(copy(mpg))
-mpg_plot <- melt(mpg_dt,measure.vars = c("cty","hwy","displ"),value.name = "val",variable.name = "var")
-
-ggplot(mpg_plot, aes(x = as.factor(cyl),y = val,fill = var))+
+ggplot(mpg, aes(x = as.factor(cyl),y = hwy))+
   geom_boxplot()+
-  theme_light()
+  geom_jitter(height=0,aes(alpha=0.5))+
+  theme_light()+
+  #coord_flip()+
+  scale_y_continuous(breaks=seq(20,40,by=10),minor_breaks = NULL)+
+  theme(panel.border = element_blank(),#element_rect(color = "black"),
+        legend.position = "none",
+        panel.grid = element_line(size = 1.5),
+        axis.line.x = element_line(color="black", size = 1)
+       )+
+  labs(x="Cylinders", y = "Highway MPG")
 ```
-```{r}
-# code copied from Stack Exchange
-# https://stackoverflow.com/questions/57107461/boxplot-by-group-and-then-column-in-r
-mpg_dt <- setDT(copy(mpg))
-mpg_plot <- melt(mpg_dt,measure.vars = c("cty","hwy","displ"),value.name = "val",variable.name = "var")
-
-ggplot(mpg_plot, aes(x = as.factor(cyl),y = val,fill = var))+
-  geom_boxplot()+
-  theme_light()
-```
-
 ## Exercise 5:
 Use the `corrplot` package to make a lower triangle correlation matrix of the `mpg` dataset. (Hint: You can find information on the package on the web.)
 
 ```{r}
-mpg_numeric <- mpg %>%
-  mutate_if(sapply(mpg, is.character), as.factor)%>%
-  mutate_if(sapply(mpg, is.factor), as.numeric)
-M <- cor(mpg_numeric)
-corrplot(M, method='number',type='lower')
+mpg_factor<-mpg %>%
+mutate_if(sapply(mpg, is.character), as.factor)
+mpg_factor%>%
+mutate_if(sapply(mpg_factor, is.factor), as.numeric)%>%
+cor()%>%
+corrplot(method='number',type='lower')
 ```
 
 Which variables are positively or negatively correlated with which others? Do these relationships make sense to you? Are there any that surprise you?
 
 # For 231 Students
 ### Reconstructing Figures
+```{r}
+ggplot(mpg, aes(x = hwy,y = class))+
+  geom_boxplot()+
+  geom_jitter(width=0,aes(alpha=0.5))+
+  theme_light()+
+  labs(x="Highway MPG",y="Vehicle Class")+
+  scale_x_continuous(breaks=seq(20,40,by=10),minor_breaks = NULL)+
+  theme(panel.border = element_blank(),#element_rect(color = "black"),
+        legend.position = "none",
+        panel.grid = element_line(size = 1.5),
+        axis.line.x = element_line(color="black", size = 1)
+       )
+```
+
+```{r}
+ggplot(mpg, aes(x = class,y = hwy,fill = drv))+
+  geom_boxplot()
+```
+
+```{r}
+ggplot(mpg, aes(x = displ,y = hwy))+
+  geom_point(aes(col=drv))+
+  geom_smooth(se=FALSE,aes(linetype=drv))
+```
